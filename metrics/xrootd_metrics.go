@@ -229,6 +229,16 @@ type (
 		Wq   int `xml:"wq"`
 	}
 
+	SummaryProcess struct {
+		SystemStats SummaryProcessTimes `xml:"sys"`
+		UserStats   SummaryProcessTimes `xml:"usr"`
+	}
+
+	SummaryProcessTimes struct {
+		SystemTimeSeconds      int `xml:"s"`
+		SystemTimeMicroseconds int `xml:"u"`
+	}
+
 	SummaryStat struct {
 		Id      SummaryStatType    `xml:"id,attr"`
 		Total   int                `xml:"tot"`
@@ -239,6 +249,7 @@ type (
 		Paths   SummaryPath        `xml:"paths"` // For Oss Summary Data
 		Store   SummaryCacheStore  `xml:"store"`
 		Memory  SummaryCacheMemory `xml:"mem"`
+		Process SummaryProcess     `xml:"proc"`
 	}
 
 	SummaryStatistics struct {
@@ -269,6 +280,7 @@ const (
 	SchedStat SummaryStatType = "sched" // https://xrootd.slac.stanford.edu/doc/dev55/xrd_monitoring.htm#_Toc99653745
 	OssStat   SummaryStatType = "oss"   // https://xrootd.slac.stanford.edu/doc/dev55/xrd_monitoring.htm#_Toc99653741
 	CacheStat SummaryStatType = "cache" // https://xrootd.slac.stanford.edu/doc/dev55/xrd_monitoring.htm#_Toc99653733
+	ProcStat  SummaryStatType = "proc"  // https://xrootd.slac.stanford.edu/doc/dev55/xrd_monitoring.htm#_Toc99653743
 )
 
 var (
@@ -1146,6 +1158,11 @@ func HandleSummaryPacket(packet []byte) error {
 				Set(float64(cacheStore.Size))
 			StorageVolume.With(prometheus.Labels{"ns": "/cache", "type": "free", "server_type": "cache"}).
 				Set(float64(cacheStore.Size - cacheStore.Used))
+		case ProcStat:
+			log.Debugln("Got process summary packet!")
+			log.Debugln(string(correctedData))
+			processStats := stat.Process
+			log.Debugf("%+v\n", processStats)
 		}
 	}
 	return nil
