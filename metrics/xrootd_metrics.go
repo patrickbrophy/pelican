@@ -229,27 +229,23 @@ type (
 		Wq   int `xml:"wq"`
 	}
 
-	SummaryProcess struct {
-		SystemStats SummaryProcessTimes `xml:"sys"`
-		UserStats   SummaryProcessTimes `xml:"usr"`
-	}
-
 	SummaryProcessTimes struct {
 		SystemTimeSeconds      int `xml:"s"`
 		SystemTimeMicroseconds int `xml:"u"`
 	}
 
 	SummaryStat struct {
-		Id      SummaryStatType    `xml:"id,attr"`
-		Total   int                `xml:"tot"`
-		In      int                `xml:"in"`
-		Out     int                `xml:"out"`
-		Threads int                `xml:"threads"`
-		Idle    int                `xml:"idle"`
-		Paths   SummaryPath        `xml:"paths"` // For Oss Summary Data
-		Store   SummaryCacheStore  `xml:"store"`
-		Memory  SummaryCacheMemory `xml:"mem"`
-		Process SummaryProcess     `xml:"proc"`
+		Id                 SummaryStatType     `xml:"id,attr"`
+		Total              int                 `xml:"tot"`
+		In                 int                 `xml:"in"`
+		Out                int                 `xml:"out"`
+		Threads            int                 `xml:"threads"`
+		Idle               int                 `xml:"idle"`
+		Paths              SummaryPath         `xml:"paths"` // For Oss Summary Data
+		Store              SummaryCacheStore   `xml:"store"`
+		Memory             SummaryCacheMemory  `xml:"mem"`
+		UserProcessStats   SummaryProcessTimes `xml:"usr"` // For Proc Summary Data
+		SystemProcessStats SummaryProcessTimes `xml:"sys"` // For Proc Summary Data
 	}
 
 	SummaryStatistics struct {
@@ -1160,9 +1156,8 @@ func HandleSummaryPacket(packet []byte) error {
 				Set(float64(cacheStore.Size - cacheStore.Used))
 		case ProcStat:
 			log.Debugln("Got process summary packet!")
-			log.Debugln(string(correctedData))
-			processStats := stat.Process
-			log.Debugf("%+v\n", processStats)
+			log.Debugf("%+v\n", stat.UserProcessStats)
+			log.Debugf("%+v\n", stat.SystemProcessStats)
 		}
 	}
 	return nil
