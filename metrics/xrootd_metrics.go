@@ -230,8 +230,8 @@ type (
 	}
 
 	SummaryProcessTimes struct {
-		SystemTimeSeconds      int `xml:"s"`
-		SystemTimeMicroseconds int `xml:"u"`
+		TimeSeconds      int `xml:"s"`
+		TimeMicroseconds int `xml:"u"`
 	}
 
 	SummaryStat struct {
