@@ -31,6 +31,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -339,6 +340,11 @@ var (
 		Name: "xrootd_server_io_wait_time",
 		Help: "The aggregate time spent in storage operations in origin/cache server",
 	})
+
+	ServerCPUUsage = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "xrootd_cpu_usage",
+		Help: "The amount of CPU time in user/system levels",
+	}, []string{"type", "unit"})
 
 	lastStats SummaryStat
 
@@ -1155,9 +1161,17 @@ func HandleSummaryPacket(packet []byte) error {
 			StorageVolume.With(prometheus.Labels{"ns": "/cache", "type": "free", "server_type": "cache"}).
 				Set(float64(cacheStore.Size - cacheStore.Used))
 		case ProcStat:
-			log.Debugln("Got process summary packet!")
-			log.Debugf("%+v\n", stat.UserProcessStats)
-			log.Debugf("%+v\n", stat.SystemProcessStats)
+			rusage := syscall.Rusage{}
+			if err := syscall.Getrusage(syscall.RUSAGE_CHILDREN, &rusage); err != nil {
+				return err
+			}
+
+			ServerCPUUsage.With(prometheus.Labels{"type": "user", "unit": "seconds"}).Set(float64(rusage.Utime.Sec))
+			ServerCPUUsage.With(prometheus.Labels{"type": "user", "unit": "microseconds"}).Set(float64(rusage.Utime.Usec))
+
+			ServerCPUUsage.With(prometheus.Labels{"type": "system", "unit": "seconds"}).Set(float64(rusage.Stime.Sec))
+			ServerCPUUsage.With(prometheus.Labels{"type": "system", "unit": "microseconds"}).Set(float64(rusage.Utime.Usec))
+
 		}
 	}
 	return nil
