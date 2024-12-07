@@ -50,7 +50,7 @@
     "react-syntax-highlighter": "^15.5.0",
     "swagger-ui-react": "^5.10.3",
     "swr": "^2.2.5",
-    "typescript": "5.1.6",
+    "typescript": "5.6.3",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
