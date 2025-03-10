@@ -330,3 +330,98 @@ With the `up` metric, it is possible to count number of active origin and cache 
   |--------------|--------------------------------------------------------------------|
   | `Success`    | The reporting to the origin of test run status succeeded           |
   | `Failed`     | The reporting to the origin of test run status failed              |
+
+### `pelican_director_map_items_total`
+
+  The total number of map items in the director, by the name of the map.
+
+  #### Label: `name`
+
+  | Label Values | Description     |
+  |--------------|-----------------|
+  | `healthTestUtils`     | Health test utilities   |
+  | `filteredServers`      | Filtered servers    |
+  | `serverStatUtils`      | Server stat utilities    |
+  | `serverStatEntries`      | Server stat entries    |
+
+### `pelican_director_ttl_cache`
+  The statistics of various TTL caches
+
+  #### Label: `name`
+  | Label Values | Description     |
+  |--------------|-----------------|
+  | `serverAds`     | Server advertisements   |
+  | `jwks` | JSON Web Key Set (JWKS)    |
+
+  #### Label: `status`
+  | Label Values | Description     |
+  |--------------|-----------------|
+  | `hits`     | Cache hit   |
+  | `misses` | Cache miss    |
+  | `insertions` | Cache insertions    |
+  | `evictions` | Cache evictions    |
+  | `total` | Total cache size    |
+
+
+### `pelican_director_server_count`
+
+  The number of servers currently recognized by the Director, delineated by pelican/non-pelican and origin/cache
+
+  #### Label: `server_type`
+
+  | Label Values | Description     |
+  |--------------|-----------------|
+  | `Origin`     | Origin server   |
+  | `Cache`      | Cache server    |
+
+
+  #### Label: `server_name`
+
+  The name of the storage server. By default it's the hostname.
+
+  #### Label: `from_topology`
+
+  | Label Values | Description     |
+  |--------------|-----------------|
+  | `true`     | The server is from the OSDF topology   |
+  | `false`      | The server is not from the OSDF topology    |
+
+
+### `pelican_director_client_version_total`
+
+  The total number of requests from client versions.
+
+  #### Label: `version`
+
+  The version of the client. This label can take on the value of `unknown` if the client version is not recognized.
+  It can also take on the value of `pelican-future` if the client version is newer than the director's version.
+
+  #### Label: `service`
+
+  The Pelican service that originated the request.
+
+
+### `pelican_director_redirections_total`
+
+  The total number of redirections the director issued.
+
+  #### Label: `destination`
+  The destination URL of the redirection.
+
+  #### Label: `status_code`
+  The status code of the redirection.
+
+  #### Label: `version`
+  The version of client being redirected.
+
+
+  #### Label: `network`
+  The masked version of the client's IP address.
+
+
+### `pelican_director_rejected_advertisements`
+
+  The total number of advertisements rejected by the director.
+
+  #### Label: `hostname`
+  The hostname of the server that was rejected.
