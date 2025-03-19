@@ -178,19 +178,21 @@ type (
 
 	// Cache g-stream: https://xrootd.slac.stanford.edu/doc/dev56/xrd_monitoring.htm#_Toc138968526
 	CacheGS struct {
-		AccessCnt   uint32 `json:"access_cnt"`
-		AttachT     int64  `json:"attach_t"`
-		ByteBypass  int64  `json:"b_bypass"`
-		ByteHit     int64  `json:"b_hit"`
-		ByteMiss    int64  `json:"b_miss"`
-		BlkSize     int    `json:"blk_size"`
-		DetachT     int64  `json:"detach_t"`
-		Event       string `json:"event"`
-		Lfn         string `json:"lfn"`
-		NBlocks     int    `json:"n_blks"`
-		NBlocksDone int    `json:"n_blks_done"`
-		NCksErrs    int    `json:"n_cks_errs"`
-		Size        int64  `json:"size"`
+		AccessCnt    uint32 `json:"access_cnt"`
+		AttachT      int64  `json:"attach_t"`
+		ByteBypass   int64  `json:"b_bypass"`
+		ByteHit      int64  `json:"b_hit"`
+		ByteMiss     int64  `json:"b_miss"`
+		BlkSize      int    `json:"blk_size"`
+		DetachT      int64  `json:"detach_t"`
+		Event        string `json:"event"`
+		Lfn          string `json:"lfn"`
+		NBlocks      int    `json:"n_blks"`
+		NBlocksDone  int    `json:"n_blks_done"`
+		NCksErrs     int    `json:"n_cks_errs"`
+		Size         int64  `json:"size"`
+		ByteToDisk   int64  `json:"b_todisk"`
+		BytePrefetch int64  `json:"b_prefetch"`
 	}
 
 	// Throttle plug-in g-stream
@@ -272,9 +274,11 @@ type (
 	}
 
 	CacheAccessStat struct {
-		Hit    int64
-		Miss   int64
-		Bypass int64
+		Hit      int64
+		Miss     int64
+		Bypass   int64
+		Prefetch int64
+		ToDisk   int64
 	}
 
 	SummaryPathStat struct {
@@ -1235,6 +1239,7 @@ func handlePacket(packet []byte) error {
 			aggCacheStat := make(map[string]*CacheAccessStat)
 			for _, js := range strJsons {
 				cacheStat := CacheGS{}
+				log.Debug("handlePacket: Received cache stat json: ", string(js))
 				if err := json.Unmarshal([]byte(js), &cacheStat); err != nil {
 					return errors.Wrap(err, "failed to parse cache stat json. Raw data is "+string(js))
 				}
@@ -1242,14 +1247,18 @@ func handlePacket(packet []byte) error {
 				prefix := computePrefix(cacheStat.Lfn, monitorPaths)
 				if aggCacheStat[prefix] == nil {
 					aggCacheStat[prefix] = &CacheAccessStat{
-						Hit:    cacheStat.ByteHit,
-						Miss:   cacheStat.ByteMiss,
-						Bypass: cacheStat.ByteBypass,
+						Hit:      cacheStat.ByteHit,
+						Miss:     cacheStat.ByteMiss,
+						Bypass:   cacheStat.ByteBypass,
+						Prefetch: cacheStat.BytePrefetch,
+						ToDisk:   cacheStat.ByteToDisk,
 					}
 				} else {
 					aggCacheStat[prefix].Hit += cacheStat.ByteHit
 					aggCacheStat[prefix].Miss += cacheStat.ByteMiss
 					aggCacheStat[prefix].Bypass += cacheStat.ByteBypass
+					aggCacheStat[prefix].Prefetch += cacheStat.BytePrefetch
+					aggCacheStat[prefix].ToDisk += cacheStat.ByteToDisk
 				}
 			}
 			for prefix, stat := range aggCacheStat {
@@ -1258,6 +1267,8 @@ func handlePacket(packet []byte) error {
 				CacheAccess.WithLabelValues(prefix, "hit").Add(float64(stat.Hit))
 				CacheAccess.WithLabelValues(prefix, "miss").Add(float64(stat.Miss))
 				CacheAccess.WithLabelValues(prefix, "bypass").Add(float64(stat.Bypass))
+				CacheAccess.WithLabelValues(prefix, "prefetch").Add(float64(stat.Prefetch))
+				CacheAccess.WithLabelValues(prefix, "to_disk").Add(float64(stat.ToDisk))
 			}
 		} else if providerID == 'R' { // IO activity from the throttle plugin
 			log.Debug("handlePacket: Received g-stream packet is from the throttle plugin")
