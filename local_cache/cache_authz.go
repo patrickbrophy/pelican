@@ -226,12 +226,13 @@ func (ac *authConfig) getAcls(token string) (newAcls acls, err error) {
 	for _, conf := range *namespaces {
 		if conf.Caps.PublicReads {
 			newAcls = append(newAcls, token_scopes.ResourceScope{Authorization: token_scopes.Wlcg_Storage_Read, Resource: conf.Path})
+			newAcls = append(newAcls, token_scopes.ResourceScope{Authorization: token_scopes.Scitokens_Read, Resource: conf.Path})
 		} else if conf.Issuer != nil {
 			for _, resource := range resources {
-				if (resource.Authorization == token_scopes.Wlcg_Storage_Create || resource.Authorization == token_scopes.Wlcg_Storage_Modify) && !conf.Caps.Writes {
+				if (resource.Authorization == token_scopes.Wlcg_Storage_Create || resource.Authorization == token_scopes.Wlcg_Storage_Modify || resource.Authorization == token_scopes.Scitokens_Write) && !conf.Caps.Writes {
 					continue
 				}
-				if resource.Authorization == token_scopes.Wlcg_Storage_Read && !conf.Caps.Reads {
+				if (resource.Authorization == token_scopes.Wlcg_Storage_Read || resource.Authorization == token_scopes.Scitokens_Read) && !conf.Caps.Reads {
 					continue
 				}
 				for _, issuerConfig := range conf.Issuer {
