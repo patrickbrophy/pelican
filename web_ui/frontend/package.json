@@ -35,7 +35,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "chartjs-plugin-zoom": "^2.0.1",
     "chroma-js": "^3.1.1",
-    "eslint": "8.45.0",
+    "eslint": "9.0.0",
     "eslint-config-next": "13.4.12",
     "fuse.js": "^7.0.0",
     "js-yaml": "^4.1.0",
