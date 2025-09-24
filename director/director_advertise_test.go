@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build !windows && server
 
 /***************************************************************
  *
@@ -18,7 +18,7 @@
  *
  ***************************************************************/
 
-package director_test
+package director
 
 import (
 	"encoding/json"

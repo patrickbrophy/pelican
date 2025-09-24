@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build !windows && client
 
 /***************************************************************
  *
@@ -18,7 +18,7 @@
  *
  ***************************************************************/
 
-package director_test
+package director
 
 import (
 	"context"

@@ -1,3 +1,5 @@
+//go:build server || client
+
 package cmd
 
 import (
